@@ -734,65 +734,141 @@ describe('Extended JSON', function () {
     });
   });
 
-  context('Formatting', function () {
-
-    const docToFormat = {
+  context('stringify: Parameter signature combinations', function () {
+    const testDoc = {
       objectId: ObjectId.createFromHexString('111111111111111111111111'),
-      int32Number: 300
+      int32Number: 300,
+      name: 'test'
     };
-    
-    it('should format with default spacing', function () {
-      const formatted = EJSON.stringify(docToFormat, undefined, undefined, { relaxed: false });
-      expect(formatted).to.equal(
-        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"}}'
-      );
+
+    it('should work with (value) - only value parameter', function () {
+      const result = EJSON.stringify(testDoc);
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":300,"name":"test"}');
     });
 
-    it('should format with custom spacing', function () {
-      const formatted = EJSON.stringify(docToFormat, undefined, 2, { relaxed: false });
-      expect(formatted).to.equal(
-        `{
+    it('should work with (value, null, space) - replacer null, space number', function () {
+      const result = EJSON.stringify(testDoc, null, 2);
+      expect(result).to.equal(`{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "int32Number": 300,
+  "name": "test"
+}`);
+    });
+
+    it('should work with (value, null, space, options) - replacer null, space, options', function () {
+      const result = EJSON.stringify(testDoc, null, 2, { relaxed: false });
+      expect(result).to.equal(`{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "int32Number": {
+    "$numberInt": "300"
+  },
+  "name": "test"
+}`);
+    });
+
+    it('should work with (value, array, space) - replacer array, space', function () {
+      const result = EJSON.stringify(testDoc, ['objectId', '$oid', 'name'], 2);
+      expect(result).to.equal(`{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "name": "test"
+}`);
+    });
+
+    it('should work with (value, array, space, options) - replacer array, space, options', function () {
+      const result = EJSON.stringify(testDoc, ['objectId', '$oid'], 2, { relaxed: false });
+      expect(result).to.equal(`{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  }
+}`);
+    });
+
+    it('should work with (value, function, space) - replacer function, space', function () {
+      const replacer = function(key: string, value: any) {
+        return key === 'name' ? undefined : value;
+      };
+      const result = EJSON.stringify(testDoc, replacer, 2);
+      expect(result).to.equal(`{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "int32Number": 300
+}`);
+    });
+
+    it('should work with (value, function, space, options) - replacer function, space, options', function () {
+      const replacer = function(key: string, value: any) {
+        return key === 'name' ? undefined : value;
+      };
+      const result = EJSON.stringify(testDoc, replacer, 2, { relaxed: false });
+      expect(result).to.equal(`{
   "objectId": {
     "$oid": "111111111111111111111111"
   },
   "int32Number": {
     "$numberInt": "300"
   }
-}`
-      );
+}`);
     });
 
-    it('should format with default spacing when options are not provided', function () {
-      const formatted = EJSON.stringify(docToFormat);
-      expect(formatted).to.equal(
-        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":300}'
-      );
+    it('should work with (value, null, options) - replacer null, options', function () {
+      const result = EJSON.stringify(testDoc, null, { relaxed: false });
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
     });
 
-    it('should format with custom spacing when options are provided', function () {
-      const formatted = EJSON.stringify(docToFormat, undefined, 4);
-      expect(formatted).to.equal(
-        `{
-    "objectId": {
-        "$oid": "111111111111111111111111"
-    },
-    "int32Number": 300
-}`
-      );
+    it('should work with (value, array, options) - replacer array, options', function () {
+      const result = EJSON.stringify(testDoc, ['objectId', '$oid'], { relaxed: false });
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"}}');
     });
 
-    it('should format with custom spacing and options', function () {
-      const formatted = EJSON.stringify(docToFormat, { relaxed: false }, 2);
-      expect(formatted).to.equal(
-        `{
+    it('should work with (value, function, options) - replacer function, options', function () {
+      const replacer = function(key: string, value: any) {
+        return key === 'int32Number' ? undefined : value;
+      };
+      const result = EJSON.stringify(testDoc, replacer, { relaxed: false });
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"name":"test"}');
+    });
+
+    it('should work with (value, options) - value and options only', function () {
+      const result = EJSON.stringify(testDoc, { relaxed: false });
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
+    });
+
+    it('should work with (value, options, space) - value, options, space (second overload)', function () {
+      const result = EJSON.stringify(testDoc, { relaxed: false }, 2);
+      expect(result).to.equal(`{
   "objectId": {
     "$oid": "111111111111111111111111"
   },
   "int32Number": {
     "$numberInt": "300"
-  }
-}`
-      );
+  },
+  "name": "test"
+}`);
+    });
+
+    it('should work with string space parameter', function () {
+      const result = EJSON.stringify(testDoc, null, '\t', { relaxed: false });
+      expect(result).to.equal(`{
+\t"objectId": {
+\t\t"$oid": "111111111111111111111111"
+\t},
+\t"int32Number": {
+\t\t"$numberInt": "300"
+\t},
+\t"name": "test"
+}`);
+    });
+
+    it('should work with space 0 (no formatting)', function () {
+      const result = EJSON.stringify(testDoc, null, 0, { relaxed: false });
+      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
     });
   });
 });

@@ -59,6 +59,30 @@ export type EJSONParseOptions = EJSONOptionsBase & {
 export type EJSONOptions = EJSONSerializeOptions & EJSONParseOptions;
 
 /** @internal */
+function isEJSONSerializeOptions(value: unknown): value is EJSONSerializeOptions {
+  if (value == null || typeof value !== 'object') {
+    return false;
+  }
+    
+  // Check that all properties, if present, are of the correct type
+  if ('legacy' in value && typeof value.legacy !== 'boolean') {
+    return false;
+  }
+  if ('relaxed' in value && typeof value.relaxed !== 'boolean') {
+    return false;
+  }
+  if ('ignoreUndefined' in value && typeof value.ignoreUndefined !== 'boolean') {
+    return false;
+  }
+  
+  // Check that there are no invalid properties (only known EJSON serialize options)
+  const validKeys = ['legacy', 'relaxed', 'ignoreUndefined'];
+  const keys = Object.keys(value);
+  
+  return keys.every(key => validKeys.includes(key));
+}
+
+/** @internal */
 type BSONType =
   | Binary
   | Code
@@ -464,28 +488,45 @@ function parse(text: string, options?: EJSONParseOptions): any {
  *
  * // prints '{"int32":10}'
  * console.log(EJSON.stringify(doc));
+ * 
+ * // prints '{"int32":{"$numberInt":"10"}}' with 2 space indentation
+ * console.log(EJSON.stringify(doc, { relaxed: false }, 2));
  * ```
  */
+function stringify(value: any, replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null, space?: string | number, options?: EJSONSerializeOptions): string;
+function stringify(value: any, replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null, options?: EJSONSerializeOptions): string;
+function stringify(value: any, options?: EJSONSerializeOptions, space?: string | number): string;
 function stringify(
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   value: any,
-  replacer?:
+  replacerOrOptions?:
     | (number | string)[]
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
     | ((this: any, key: string, value: any) => any)
+    | null
     | EJSONSerializeOptions,
-  space?: string | number,
+  spaceOrOptions?: string | number | EJSONSerializeOptions,
   options?: EJSONSerializeOptions
 ): string {
-  if (space != null && typeof space === 'object') {
-    options = space;
-    space = 0;
-  }
-  if (replacer != null && typeof replacer === 'object' && !Array.isArray(replacer)) {
-    options = replacer;
+  let replacer: ((this: any, key: string, value: any) => any) | (number | string)[] | null | undefined;
+  let space: string | number | undefined;
+  
+  // Check if second parameter is options
+  if (isEJSONSerializeOptions(replacerOrOptions)) {
+    options = replacerOrOptions;
     replacer = undefined;
-    space = 0;
+    space = typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string' ? spaceOrOptions : undefined;
   }
+  // Check if third parameter is options
+  else if (isEJSONSerializeOptions(spaceOrOptions)) {
+    options = spaceOrOptions;
+    replacer = replacerOrOptions;
+    space = undefined;
+  }
+  // Standard case: replacer, space, options
+  else {
+    replacer = replacerOrOptions;
+    space = typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string' ? spaceOrOptions : undefined;
+  }
+  
   const serializeOptions = Object.assign({ relaxed: true, legacy: false }, options, {
     seenObjects: [{ propertyName: '(root)', obj: null }]
   });

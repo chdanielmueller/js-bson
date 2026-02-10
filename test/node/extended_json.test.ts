@@ -733,4 +733,66 @@ describe('Extended JSON', function () {
       expect(() => EJSON.stringify(input)).to.throw(BSONError);
     });
   });
+
+  context('Formatting', function () {
+
+    const docToFormat = {
+      objectId: ObjectId.createFromHexString('111111111111111111111111'),
+      int32Number: 300
+    };
+    
+    it('should format with default spacing', function () {
+      const formatted = EJSON.stringify(docToFormat, undefined, undefined, { relaxed: false });
+      expect(formatted).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"}}'
+      );
+    });
+
+    it('should format with custom spacing', function () {
+      const formatted = EJSON.stringify(docToFormat, undefined, 2, { relaxed: false });
+      expect(formatted).to.equal(
+        `{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "int32Number": {
+    "$numberInt": "300"
+  }
+}`
+      );
+    });
+
+    it('should format with default spacing when options are not provided', function () {
+      const formatted = EJSON.stringify(docToFormat);
+      expect(formatted).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":300}'
+      );
+    });
+
+    it('should format with custom spacing when options are provided', function () {
+      const formatted = EJSON.stringify(docToFormat, undefined, 4);
+      expect(formatted).to.equal(
+        `{
+    "objectId": {
+        "$oid": "111111111111111111111111"
+    },
+    "int32Number": 300
+}`
+      );
+    });
+
+    it('should format with custom spacing and options', function () {
+      const formatted = EJSON.stringify(docToFormat, { relaxed: false }, 2);
+      expect(formatted).to.equal(
+        `{
+  "objectId": {
+    "$oid": "111111111111111111111111"
+  },
+  "int32Number": {
+    "$numberInt": "300"
+  }
+}`
+      );
+    });
+  });
 });

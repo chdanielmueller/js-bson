@@ -63,7 +63,7 @@ function isEJSONSerializeOptions(value: unknown): value is EJSONSerializeOptions
   if (value == null || typeof value !== 'object') {
     return false;
   }
-    
+
   // Check that all properties, if present, are of the correct type
   if ('legacy' in value && typeof value.legacy !== 'boolean') {
     return false;
@@ -74,11 +74,11 @@ function isEJSONSerializeOptions(value: unknown): value is EJSONSerializeOptions
   if ('ignoreUndefined' in value && typeof value.ignoreUndefined !== 'boolean') {
     return false;
   }
-  
+
   // Check that there are no invalid properties (only known EJSON serialize options)
   const validKeys = ['legacy', 'relaxed', 'ignoreUndefined'];
   const keys = Object.keys(value);
-  
+
   return keys.every(key => validKeys.includes(key));
 }
 
@@ -467,6 +467,7 @@ function parse(text: string, options?: EJSONParseOptions): any {
   });
 }
 
+/* eslint-disable @typescript-eslint/no-explicit-any */
 /**
  * Converts a BSON document to an Extended JSON string, optionally replacing values if a replacer
  * function is specified or optionally including only the specified properties if a replacer array
@@ -488,13 +489,22 @@ function parse(text: string, options?: EJSONParseOptions): any {
  *
  * // prints '{"int32":10}'
  * console.log(EJSON.stringify(doc));
- * 
+ *
  * // prints '{"int32":{"$numberInt":"10"}}' with 2 space indentation
  * console.log(EJSON.stringify(doc, { relaxed: false }, 2));
  * ```
  */
-function stringify(value: any, replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null, space?: string | number, options?: EJSONSerializeOptions): string;
-function stringify(value: any, replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null, options?: EJSONSerializeOptions): string;
+function stringify(
+  value: any,
+  replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null,
+  space?: string | number,
+  options?: EJSONSerializeOptions
+): string;
+function stringify(
+  value: any,
+  replacer?: (number | string)[] | ((this: any, key: string, value: any) => any) | null,
+  options?: EJSONSerializeOptions
+): string;
 function stringify(value: any, options?: EJSONSerializeOptions, space?: string | number): string;
 function stringify(
   value: any,
@@ -506,14 +516,22 @@ function stringify(
   spaceOrOptions?: string | number | EJSONSerializeOptions,
   options?: EJSONSerializeOptions
 ): string {
-  let replacer: ((this: any, key: string, value: any) => any) | (number | string)[] | null | undefined;
+  let replacer:
+    | ((this: any, key: string, value: any) => any)
+    | (number | string)[]
+    | null
+    | undefined;
   let space: string | number | undefined;
-  
+  /* eslint-enable @typescript-eslint/no-explicit-any */
+
   // Check if second parameter is options
   if (isEJSONSerializeOptions(replacerOrOptions)) {
     options = replacerOrOptions;
     replacer = undefined;
-    space = typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string' ? spaceOrOptions : undefined;
+    space =
+      typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string'
+        ? spaceOrOptions
+        : undefined;
   }
   // Check if third parameter is options
   else if (isEJSONSerializeOptions(spaceOrOptions)) {
@@ -524,9 +542,12 @@ function stringify(
   // Standard case: replacer, space, options
   else {
     replacer = replacerOrOptions;
-    space = typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string' ? spaceOrOptions : undefined;
+    space =
+      typeof spaceOrOptions === 'number' || typeof spaceOrOptions === 'string'
+        ? spaceOrOptions
+        : undefined;
   }
-  
+
   const serializeOptions = Object.assign({ relaxed: true, legacy: false }, options, {
     seenObjects: [{ propertyName: '(root)', obj: null }]
   });

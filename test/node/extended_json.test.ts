@@ -743,7 +743,9 @@ describe('Extended JSON', function () {
 
     it('should work with (value) - only value parameter', function () {
       const result = EJSON.stringify(testDoc);
-      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":300,"name":"test"}');
+      expect(result).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":300,"name":"test"}'
+      );
     });
 
     it('should work with (value, null, space) - replacer null, space number', function () {
@@ -790,7 +792,8 @@ describe('Extended JSON', function () {
     });
 
     it('should work with (value, function, space) - replacer function, space', function () {
-      const replacer = function(key: string, value: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacer = function (key: string, value: any) {
         return key === 'name' ? undefined : value;
       };
       const result = EJSON.stringify(testDoc, replacer, 2);
@@ -803,7 +806,8 @@ describe('Extended JSON', function () {
     });
 
     it('should work with (value, function, space, options) - replacer function, space, options', function () {
-      const replacer = function(key: string, value: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacer = function (key: string, value: any) {
         return key === 'name' ? undefined : value;
       };
       const result = EJSON.stringify(testDoc, replacer, 2, { relaxed: false });
@@ -819,7 +823,9 @@ describe('Extended JSON', function () {
 
     it('should work with (value, null, options) - replacer null, options', function () {
       const result = EJSON.stringify(testDoc, null, { relaxed: false });
-      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
+      expect(result).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}'
+      );
     });
 
     it('should work with (value, array, options) - replacer array, options', function () {
@@ -828,7 +834,8 @@ describe('Extended JSON', function () {
     });
 
     it('should work with (value, function, options) - replacer function, options', function () {
-      const replacer = function(key: string, value: any) {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      const replacer = function (key: string, value: any) {
         return key === 'int32Number' ? undefined : value;
       };
       const result = EJSON.stringify(testDoc, replacer, { relaxed: false });
@@ -837,7 +844,9 @@ describe('Extended JSON', function () {
 
     it('should work with (value, options) - value and options only', function () {
       const result = EJSON.stringify(testDoc, { relaxed: false });
-      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
+      expect(result).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}'
+      );
     });
 
     it('should work with (value, options, space) - value, options, space (second overload)', function () {
@@ -868,7 +877,9 @@ describe('Extended JSON', function () {
 
     it('should work with space 0 (no formatting)', function () {
       const result = EJSON.stringify(testDoc, null, 0, { relaxed: false });
-      expect(result).to.equal('{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}');
+      expect(result).to.equal(
+        '{"objectId":{"$oid":"111111111111111111111111"},"int32Number":{"$numberInt":"300"},"name":"test"}'
+      );
     });
   });
 });
